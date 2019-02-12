@@ -437,8 +437,9 @@ static int play (player_t * const player) {
 			int64_t bufferHealth = 0;
 			do {
 				pthread_mutex_lock (&player->aoplayLock);
-				bufferHealth = av_q2d (player->st->time_base) * 
-						(double) (frame->pts - player->lastTimestamp);
+				const AVRational bufferHealthQ = av_mul_q (player->st->time_base,
+						av_make_q (frame->pts - player->lastTimestamp, 1));
+				bufferHealth = bufferHealthQ.num/bufferHealthQ.den;
 				if (bufferHealth > minBufferHealth) {
 					/* Buffer get healthy, resume */
 					pthread_cond_broadcast (&player->aoplayCond);
